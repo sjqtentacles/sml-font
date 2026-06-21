@@ -1,0 +1,14 @@
+(* Test executable basis: the font library (which pulls in the vendored
+ * sml-raster + sml-image stack) plus the harness and runner. *)
+$(SML_LIB)/basis/basis.mlb
+
+../src/font.mlb
+
+harness.sml
+support.sml
+test_parse.sml
+test_glyph.sml
+test_measure.sml
+test_draw.sml
+entry.sml
+main.sml
