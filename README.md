@@ -22,7 +22,7 @@ glyph rendered with `Font.drawText`, encoded to PNG.*
 
 ## Status
 
-- 31 assertions, green on MLton and Poly/ML.
+- 36 assertions, green on MLton and Poly/ML.
 - Basis-library only; deterministic across compilers (PNG output is
   byte-identical run to run).
 - Vendors `sml-image` + `sml-raster` (and their deps `sml-inflate`,
@@ -101,6 +101,10 @@ val img'  = Font.drawText img { x = 8, y = 8, scale = 2, color = white } font "H
   `DEFAULT_CHAR`, and per-glyph `ENCODING` / `DWIDTH` / `BBX` / hex `BITMAP`
   rows (leftmost pixel in the MSB, each row padded to whole bytes) — the common
   subset emitted by real bitmap fonts. Encodings `0..255` are indexed directly.
+  Integer fields are parsed via `IntInf` and bounded to the fixed 32-bit range
+  `[-2147483648, 2147483647]`, so an oversized field raises `Font` identically
+  on MLton (32-bit `int`) and Poly/ML (63-bit `int`) instead of raising
+  `Overflow` on MLton — real BDF metrics are all small.
 
 ## The bundled font
 

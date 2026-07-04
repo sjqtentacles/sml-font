@@ -27,6 +27,40 @@ struct
 
       val () = H.checkRaises "parseBdf rejects junk"
                  (fn () => F.parseBdf "not a bdf file at all")
+
+      val () = H.section "oversized integer fields (cross-compiler bounded parse)"
+      (* A BDF integer field past the fixed 32-bit range must raise `Font` (the
+         documented failure), never a raw `Overflow`. MLton's default `int` is
+         32-bit and `Int.fromString` raises `Overflow` past 2^31, while
+         Poly/ML's 63-bit `int` silently accepts it -- so an unbounded parse
+         both crashes MLton and diverges across compilers. `toInt` must reject
+         out-of-range digits as `Font`. Real BDF metrics are all small. *)
+      (* Minimal valid single-glyph BDF with the encoding / bounding-box fields
+         substituted, so one field at a time can be pushed out of range. *)
+      fun bdf (encoding, fbbx) =
+        "STARTFONT 2.1\n\
+        \FONTBOUNDINGBOX " ^ fbbx ^ "\n\
+        \FONT_ASCENT 7\nFONT_DESCENT 0\nDEFAULT_CHAR 63\n\
+        \STARTCHAR A\n\
+        \ENCODING " ^ encoding ^ "\n\
+        \DWIDTH 6 0\nBBX 5 7 0 0\n\
+        \BITMAP\n00\n00\n00\n00\n00\n00\n00\nENDCHAR\nENDFONT\n"
+      fun fontErr src =
+        (ignore (F.parseBdf src); "no-exn")
+        handle F.Font _ => "font"
+             | Overflow  => "overflow"
+             | _         => "other"
+      (* sanity: the template with all-in-range fields parses cleanly *)
+      val () = H.checkString "in-range template parses"
+                 ("no-exn", fontErr (bdf ("65", "5 7 0 0")))
+      val () = H.checkString "ENCODING 2147483648 -> Font, not Overflow"
+                 ("font", fontErr (bdf ("2147483648", "5 7 0 0")))
+      val () = H.checkString "ENCODING 999999999999 -> Font, not Overflow"
+                 ("font", fontErr (bdf ("999999999999", "5 7 0 0")))
+      val () = H.checkString "FONTBOUNDINGBOX 999999999999 -> Font, not Overflow"
+                 ("font", fontErr (bdf ("65", "999999999999 7 0 0")))
+      val () = H.checkString "ENCODING -2147483649 -> Font, not Overflow"
+                 ("font", fontErr (bdf ("-2147483649", "5 7 0 0")))
     in
       ()
     end
