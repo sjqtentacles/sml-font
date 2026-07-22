@@ -1,5 +1,7 @@
 # sml-font
 
+[![CI](https://github.com/sjqtentacles/sml-font/actions/workflows/ci.yml/badge.svg)](https://github.com/sjqtentacles/sml-font/actions/workflows/ci.yml)
+
 Bitmap font glyph rendering in pure Standard ML — parse a
 [BDF](https://en.wikipedia.org/wiki/Glyph_Bitmap_Distribution_Format) font and
 draw text straight into an [`sml-image`](https://github.com/sjqtentacles/sml-image)
